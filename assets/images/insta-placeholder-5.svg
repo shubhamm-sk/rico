@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 340 400" fill="none">
+  <rect width="340" height="400" fill="#181c1a"/>
+  <circle cx="120" cy="180" r="50" fill="#2a332f"/>
+  <circle cx="220" cy="220" r="60" fill="#222a27"/>
+  <text x="170" y="360" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="12" fill="rgba(255,255,255,0.25)">Kitchen Essentials</text>
+</svg>

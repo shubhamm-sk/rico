@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rico — Designed For Modern Living</title>
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;800&family=Oswald:wght@400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <!-- HEADER -->
+  <header class="site-header" id="siteHeader">
+    <button class="header__menu-btn" id="menuBtn" type="button" aria-label="Open menu">
+      <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+        <line x1="3" y1="6" x2="21" y2="6"></line>
+        <line x1="3" y1="12" x2="21" y2="12"></line>
+        <line x1="3" y1="18" x2="21" y2="18"></line>
+      </svg>
+    </button>
+
+    <a href="/" class="header__logo" aria-label="Rico Home">
+      <img src="assets/images/logo.png" alt="Rico">
+    </a>
+
+    <div class="header__right">
+      <div class="header__search" id="searchWrapper">
+        <button class="header__search-toggle" id="searchToggle" type="button" aria-label="Toggle search">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="white" stroke-width="2" aria-hidden="true">
+            <circle cx="11" cy="11" r="7"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+        </button>
+        <form class="header__search-form" id="searchForm" role="search">
+          <input type="text" placeholder="Search" class="header__search-input" id="searchInput" aria-label="Search products">
+          <button type="submit" class="header__search-btn" aria-label="Search">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="white" stroke-width="2" aria-hidden="true">
+              <circle cx="11" cy="11" r="7"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+          </button>
+        </form>
+      </div>
+
+      <a href="/account/login" class="header__login" id="loginLink">
+        <span class="header__login-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+            <circle cx="12" cy="7" r="4"></circle>
+          </svg>
+        </span>
+        <span class="header__login-text">Login / Sign Up</span>
+      </a>
+
+      <button class="header__cart-btn" id="cartBtn" type="button" aria-label="Open shopping cart">
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="white" stroke-width="1.5" aria-hidden="true">
+          <circle cx="9" cy="21" r="1"></circle>
+          <circle cx="20" cy="21" r="1"></circle>
+          <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+        </svg>
+        <span class="header__cart-badge" id="cartBadge" hidden>0</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Menu Drawer -->
+  <div class="drawer-overlay" id="menuOverlay" aria-hidden="true"></div>
+  <nav class="drawer drawer--left" id="menuDrawer" aria-label="Main navigation">
+    <div class="drawer__header">
+      <span class="drawer__title">Menu</span>
+      <button class="drawer__close" id="menuClose" type="button" aria-label="Close menu">&times;</button>
+    </div>
+    <ul class="drawer__nav" id="navLinks"></ul>
+  </nav>
+
+  <!-- Cart Drawer -->
+  <div class="drawer-overlay" id="cartOverlay" aria-hidden="true"></div>
+  <aside class="drawer drawer--right" id="cartDrawer" aria-label="Shopping cart">
+    <div class="drawer__header">
+      <span class="drawer__title">Your Cart</span>
+      <button class="drawer__close" id="cartClose" type="button" aria-label="Close cart">&times;</button>
+    </div>
+    <div class="cart-drawer__body">
+      <p class="cart-drawer__empty">Your cart is empty.</p>
+    </div>
+  </aside>
+
+  <!-- SECTION 2: HERO BANNER -->
+  <section class="hero" id="heroSection" aria-label="Featured products carousel">
+    <div class="hero__track" id="heroTrack"></div>
+
+    <button class="hero__arrow hero__arrow--prev" id="heroPrev" type="button" aria-label="Previous slide">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <polyline points="15 18 9 12 15 6"/>
+      </svg>
+    </button>
+    <button class="hero__arrow hero__arrow--next" id="heroNext" type="button" aria-label="Next slide">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <polyline points="9 18 15 12 9 6"/>
+      </svg>
+    </button>
+  </section>
+
+  <!-- NEW COLLECTION PRODUCT SHOWCASE -->
+  <section class="new-collection" id="newCollection" aria-label="New collection products">
+    <div class="new-collection__heading">
+      <p class="new-collection__eyebrow">NEW COLLECTION</p>
+      <h2 class="new-collection__title">Designed For Modern Living.</h2>
+    </div>
+
+    <div class="new-collection__viewport">
+      <button class="new-collection__arrow new-collection__arrow--prev is-disabled" id="newCollectionPrev" type="button" aria-label="Previous products">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <polyline points="15 18 9 12 15 6"/>
+        </svg>
+      </button>
+
+      <div class="new-collection__overflow">
+        <div class="new-collection__track" id="newCollectionTrack"></div>
+      </div>
+
+      <button class="new-collection__arrow new-collection__arrow--next" id="newCollectionNext" type="button" aria-label="Next products">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <polyline points="9 18 15 12 9 6"/>
+        </svg>
+      </button>
+    </div>
+  </section>
+
+  <!-- TOP SELLING CAROUSEL -->
+  <section class="top-selling" id="topSelling" aria-label="Top selling products">
+    <h2 class="top-selling__title">Top Selling</h2>
+
+    <div class="top-selling__carousel">
+      <button class="top-selling__arrow top-selling__arrow--prev" id="topSellingPrev" type="button" aria-label="Previous products">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <polyline points="15 18 9 12 15 6"/>
+        </svg>
+      </button>
+
+      <div class="top-selling__viewport" id="topSellingViewport">
+        <div class="top-selling__track" id="topSellingTrack"></div>
+      </div>
+
+      <button class="top-selling__arrow top-selling__arrow--next" id="topSellingNext" type="button" aria-label="Next products">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <polyline points="9 18 15 12 9 6"/>
+        </svg>
+      </button>
+    </div>
+  </section>
+
+  <!-- CRAFTED WITH INNOVATIONS (rendered by JS) -->
+  <div id="explodedProductRoot"></div>
+
+  <!-- ABOUT INNOVATION & R&D JOURNEY -->
+  <section class="about-innovation" id="aboutInnovation" aria-label="About Innovation and R&D Journey">
+    <div class="about-innovation__content">
+      <h2 class="about-innovation__heading" id="aboutInnovationHeading">About Innovation<br>&amp; R&amp;D Journey</h2>
+      <div class="about-innovation__banner-mount" id="bannerUploadMount"></div>
+    </div>
+  </section>
+
+  <!-- VISION -->
+  <section class="vision" id="visionSection" aria-label="Vision">
+    <div class="vision__inner">
+      <div class="vision__heading-wrap">
+        <h2 class="vision__heading" id="visionHeading">Vision</h2>
+        <!-- <span class="vision__hand-hint" aria-hidden="true">✋</span> -->
+      </div>
+
+      <div class="vision__layout">
+        <div class="vision__founder vision__founder--left" id="founder1UploadMount"></div>
+
+        <div class="vision__center">
+          <blockquote class="vision__quote" id="visionQuote">
+            "A future where every home owns better products — designed to perform longer, waste less, and make everyday life easier."
+          </blockquote>
+          <hr class="vision__divider">
+          <p class="vision__founders" id="foundersLine">Mr. <strong>Manoj</strong> and Mr. <strong>Vikram</strong> Thakur</p>
+          <p class="vision__founders-role" id="foundersRole">(Founders and Directors of Rico)</p>
+        </div>
+
+        <div class="vision__founder vision__founder--right" id="founder2UploadMount"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- LISTEN FROM LONG-TERM BELIEVERS -->
+  <section class="testimonials" id="testimonials" aria-label="Customer testimonials">
+    <div class="testimonials__heading">
+      <h2 class="testimonials__title">Listen From Long-Term Believers</h2>
+      <p class="testimonials__subtitle">More than customers, it's a family.</p>
+    </div>
+
+    <div class="testimonials__carousel">
+      <button class="testimonials__arrow testimonials__arrow--prev" id="testimonialsPrev" type="button" aria-label="Previous review">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <polyline points="15 18 9 12 15 6"/>
+        </svg>
+      </button>
+
+      <div class="testimonials__viewport" id="testimonialsViewport">
+        <div class="testimonials__track" id="testimonialsTrack"></div>
+      </div>
+
+      <button class="testimonials__arrow testimonials__arrow--next" id="testimonialsNext" type="button" aria-label="Next review">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <polyline points="9 18 15 12 9 6"/>
+        </svg>
+      </button>
+    </div>
+  </section>
+
+  <!-- WHY ONLY RICO? -->
+  <section class="why-rico" id="whyRico" aria-label="Why Only Rico">
+    <h2 class="why-rico__title">Why Only RICO?</h2>
+
+    <div class="why-rico__carousel">
+      <button class="why-rico__arrow why-rico__arrow--prev is-disabled" id="whyRicoPrev" type="button" aria-label="Previous">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <polyline points="15 18 9 12 15 6"/>
+        </svg>
+      </button>
+
+      <div class="why-rico__viewport" id="whyRicoViewport">
+        <div class="why-rico__track" id="whyRicoTrack"></div>
+      </div>
+
+      <button class="why-rico__arrow why-rico__arrow--next" id="whyRicoNext" type="button" aria-label="Next">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <polyline points="9 18 15 12 9 6"/>
+        </svg>
+      </button>
+    </div>
+
+    <div class="why-rico__dots" id="whyRicoDots" aria-hidden="true"></div>
+  </section>
+
+  <!-- PRODUCT VIDEOS -->
+  <section class="product-videos" id="productVideos" aria-label="Product videos">
+    <h2 class="product-videos__title">Product Videos</h2>
+
+    <div class="product-videos__carousel">
+      <button class="product-videos__arrow product-videos__arrow--prev is-disabled" id="productVideosPrev" type="button" aria-label="Previous video" disabled>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <polyline points="15 18 9 12 15 6"/>
+        </svg>
+      </button>
+
+      <div class="product-videos__viewport" id="productVideosViewport">
+        <div class="product-videos__track" id="productVideosTrack"></div>
+      </div>
+
+      <button class="product-videos__arrow product-videos__arrow--next" id="productVideosNext" type="button" aria-label="Next video">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <polyline points="9 18 15 12 9 6"/>
+        </svg>
+      </button>
+    </div>
+  </section>
+
+  <!-- Video lightbox modal -->
+  <div class="video-modal" id="videoModal" aria-hidden="true" role="dialog" aria-label="Video player">
+    <div class="video-modal__backdrop" id="videoModalBackdrop"></div>
+    <div class="video-modal__dialog">
+      <button class="video-modal__close" id="videoModalClose" type="button" aria-label="Close video">&times;</button>
+      <div class="video-modal__player" id="videoModalPlayer"></div>
+    </div>
+  </div>
+
+  <!-- INSPIRED LIVING WITH RICO -->
+  <section class="inspired-living" id="inspiredLiving" aria-label="Inspired Living with RICO">
+    <div class="inspired-living__heading-wrap">
+      <!-- <span class="inspired-living__hand" aria-hidden="true">✋</span> -->
+      <h2 class="inspired-living__title">Inspired Living with RICO</h2>
+    </div>
+    <div class="inspired-living__row" id="inspiredLivingRow"></div>
+  </section>
+
+  <!-- DON'T MISS WHAT'S NEXT -->
+  <section class="newsletter-cta" id="newsletterCta" aria-label="Newsletter signup">
+    <div class="newsletter-cta__text">
+      <h2 class="newsletter-cta__title">Don't Miss What's Next</h2>
+      <p class="newsletter-cta__desc">
+        Enter your Name, Email, and Mobile Number to receive the latest updates, expert tips, recipes, and exclusive offers from Rico.
+      </p>
+    </div>
+    <button type="button" class="newsletter-cta__btn" id="newsletterOpenBtn">
+      CLICK HERE TO SUBSCRIBE NEWS LETTER
+    </button>
+  </section>
+
+  <!-- Subscribe modal -->
+  <div class="subscribe-modal" id="subscribeModal" aria-hidden="true" role="dialog" aria-labelledby="subscribeModalTitle">
+    <div class="subscribe-modal__backdrop" id="subscribeModalBackdrop"></div>
+    <div class="subscribe-modal__box">
+      <button type="button" class="subscribe-modal__close" id="subscribeModalClose" aria-label="Close">&times;</button>
+      <h3 class="subscribe-modal__title" id="subscribeModalTitle">Subscribe to RICO Updates</h3>
+      <form class="subscribe-modal__form" id="subscribeForm" novalidate>
+        <input type="text" name="name" placeholder="Your Name" required autocomplete="name">
+        <input type="email" name="email" placeholder="Your Email" required autocomplete="email">
+        <input type="tel" name="mobile" placeholder="Your Mobile Number" required autocomplete="tel">
+        <button type="submit" class="subscribe-modal__submit">Subscribe Now</button>
+      </form>
+      <p class="subscribe-modal__success" id="subscribeSuccess" hidden>Thanks for subscribing!</p>
+    </div>
+  </div>
+
+  <!-- FOLLOW US ON INSTAGRAM -->
+  <section class="instagram-feed" id="instagramFeed" aria-label="Instagram feed">
+    <h2 class="instagram-feed__title" id="instagramHeading">Follow Us On @ricoapplicnces</h2>
+
+    <div class="instagram-feed__carousel">
+      <button class="instagram-feed__arrow instagram-feed__arrow--prev" id="instagramPrev" type="button" aria-label="Previous posts">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <polyline points="15 18 9 12 15 6"/>
+        </svg>
+      </button>
+
+      <div class="instagram-feed__viewport" id="instagramViewport">
+        <div class="instagram-feed__track" id="instagramTrack"></div>
+      </div>
+
+      <button class="instagram-feed__arrow instagram-feed__arrow--next" id="instagramNext" type="button" aria-label="Next posts">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <polyline points="9 18 15 12 9 6"/>
+        </svg>
+      </button>
+    </div>
+  </section>
+
+  <!-- BUILT TO LAST -->
+  <section class="built-to-last" id="builtToLast" aria-label="Built to last">
+    <!-- <span class="built-to-last__hand" aria-hidden="true">✋</span> -->
+    <p class="built-to-last__bg" id="builtToLastBg" aria-hidden="true">BUILT TO LAST</p>
+    <blockquote class="built-to-last__quote" id="builtToLastQuote">
+      The most sustainable product is the one you don't need to replace.
+    </blockquote>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="site-footer" id="siteFooter">
+    <div class="site-footer__main">
+      <div class="site-footer__brand">
+        <a href="/" class="site-footer__logo" aria-label="Rico Home">
+          <img src="assets/images/logo.png" alt="Rico®" width="150" height="28">
+        </a>
+        <p class="site-footer__since">SINCE 1965</p>
+      </div>
+
+      <div class="site-footer__columns" id="footerColumns"></div>
+
+      <div class="site-footer__newsletter">
+        <h3 class="site-footer__newsletter-heading">Fear of missing out?</h3>
+        <p class="site-footer__newsletter-text">Sign up and be the first to know!</p>
+      </div>
+    </div>
+
+    <div class="site-footer__stats">
+      <div class="site-footer__stats-left" id="footerStats"></div>
+      <div class="site-footer__stats-social" id="footerSocial"></div>
+    </div>
+
+    <div class="site-footer__copyright">
+      <p class="site-footer__copyright-line" id="footerCopyrightLine"></p>
+      <nav class="site-footer__copyright-nav" id="footerCopyrightLinks" aria-label="Footer legal links"></nav>
+    </div>
+  </footer>
+
+  <script async src="//www.instagram.com/embed.js"></script>
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>

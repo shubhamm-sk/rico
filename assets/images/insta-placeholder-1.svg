@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 340 400" fill="none">
+  <rect width="340" height="400" fill="#1a2220"/>
+  <circle cx="170" cy="160" r="80" fill="#2a3532" opacity="0.6"/>
+  <text x="170" y="320" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="12" fill="rgba(255,255,255,0.25)">AirSwift Table Fan</text>
+</svg>

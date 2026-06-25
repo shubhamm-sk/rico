@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 340 425" fill="none">
+  <defs>
+    <linearGradient id="bg2" x1="40" y1="0" x2="300" y2="425" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#1c2220"/>
+      <stop offset="0.5" stop-color="#2a3330"/>
+      <stop offset="1" stop-color="#141918"/>
+    </linearGradient>
+    <radialGradient id="glow2" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(120 180) rotate(0) scale(140 100)">
+      <stop stop-color="#d4c4a8" stop-opacity="0.28"/>
+      <stop offset="1" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="340" height="425" fill="url(#bg2)"/>
+  <rect width="340" height="425" fill="url(#glow2)"/>
+  <circle cx="95" cy="175" r="42" fill="#3d4542"/>
+  <circle cx="95" cy="168" r="28" fill="#4f5854"/>
+  <rect x="145" y="130" width="150" height="90" rx="6" fill="#2f3634" opacity="0.9"/>
+  <rect x="158" y="148" width="124" height="8" rx="2" fill="#4a524f" opacity="0.6"/>
+  <rect x="158" y="168" width="96" height="6" rx="2" fill="#4a524f" opacity="0.4"/>
+  <rect x="158" y="184" width="110" height="6" rx="2" fill="#4a524f" opacity="0.35"/>
+</svg>

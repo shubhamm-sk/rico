@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 340 400" fill="none">
+  <rect width="340" height="400" fill="#1c1f1e"/>
+  <rect x="100" y="100" width="140" height="180" rx="12" fill="#2d3834"/>
+  <text x="170" y="330" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="12" fill="rgba(255,255,255,0.25)">Citrus Juicer</text>
+</svg>
