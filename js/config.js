@@ -17,60 +17,6 @@ export const HEADER_CONFIG = {
   cartItemCount: 0,
 };
 
-export const NEW_COLLECTION_PRODUCTS = [
-  {
-    name: 'Nutri Fresh',
-    model: 'MG-2609',
-    discount: '(67% OFF)',
-    price: '₹ 7,000.00',
-    image: 'assets/images/nutri-fresh-demo.jpg',
-    fallback: 'assets/images/nutri-fresh-demo.svg',
-  },
-  {
-    name: 'Citrus Juicer',
-    model: 'CJ-2510',
-    discount: '(50% OFF)',
-    price: '₹ 1,499.00',
-    image: 'assets/images/citrus-juicer-demo.jpg',
-    fallback: 'assets/images/citrus-juicer-demo.svg',
-  },
-  {
-    name: 'Product 3',
-    model: 'MODEL-CODE',
-    discount: '(0% OFF)',
-    price: '₹ 0.00',
-    image: null,
-  },
-  {
-    name: 'Product 4',
-    model: 'MODEL-CODE',
-    discount: '(0% OFF)',
-    price: '₹ 0.00',
-    image: null,
-  },
-  {
-    name: 'Product 5',
-    model: 'MODEL-CODE',
-    discount: '(0% OFF)',
-    price: '₹ 0.00',
-    image: null,
-  },
-  {
-    name: 'Product 6',
-    model: 'MODEL-CODE',
-    discount: '(0% OFF)',
-    price: '₹ 0.00',
-    image: null,
-  },
-  {
-    name: 'Product 7',
-    model: 'MODEL-CODE',
-    discount: '(0% OFF)',
-    price: '₹ 0.00',
-    image: null,
-  },
-];
-
 export const TOP_SELLING_PRODUCTS = [
   { label: 'Product-1', image: 'assets/images/product1.jpg', color: 'linear-gradient(to bottom, #3a2a1a, #c97b32)' },
   { label: 'Product-2', image: 'assets/images/product2.jpg', color: 'linear-gradient(to bottom, #1a2433, #2e3a55)' },

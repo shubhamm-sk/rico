@@ -1,8 +1,8 @@
 import { initHeader } from './header.js';
 import { initHeroCarousel } from './heroCarousel.js';
-import { initNewCollection } from './newCollection.js';
+import { initShowcase } from './showcase.js';
 import { initTopSellingCarousel } from './topSellingCarousel.js';
-import { initExplodedProduct } from './explodedProduct.js';
+import { initCrafted } from './crafted.js';
 import { initAboutVision } from './aboutVision.js';
 import { initTestimonialCarousel } from './testimonialCarousel.js';
 import { initWhyRicoCarousel } from './whyRicoCarousel.js';
@@ -16,9 +16,9 @@ import { initFooter } from './footer.js';
 document.addEventListener('DOMContentLoaded', () => {
   initHeader();
   initHeroCarousel();
-  initNewCollection();
-  initExplodedProduct();
+  initShowcase();
   initTopSellingCarousel();
+  initCrafted();
   initAboutVision();
   initTestimonialCarousel();
   initWhyRicoCarousel();

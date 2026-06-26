@@ -103,29 +103,15 @@
     </button>
   </section>
 
-  <!-- NEW COLLECTION PRODUCT SHOWCASE -->
-  <section class="new-collection" id="newCollection" aria-label="New collection products">
-    <div class="new-collection__heading">
-      <p class="new-collection__eyebrow">NEW COLLECTION</p>
-      <h2 class="new-collection__title">Designed For Modern Living.</h2>
+  <!-- INFINITE AUTO-SCROLL PRODUCT SHOWCASE -->
+  <section class="showcase" id="showcaseSection" aria-label="All products auto-scroll carousel">
+    <div class="showcase__heading">
+      <p class="showcase__eyebrow">NEW COLLECTION</p>
+      <h2 class="showcase__title">Designed For Modern Living.</h2>
     </div>
 
-    <div class="new-collection__viewport">
-      <button class="new-collection__arrow new-collection__arrow--prev is-disabled" id="newCollectionPrev" type="button" aria-label="Previous products">
-        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <polyline points="15 18 9 12 15 6"/>
-        </svg>
-      </button>
-
-      <div class="new-collection__overflow">
-        <div class="new-collection__track" id="newCollectionTrack"></div>
-      </div>
-
-      <button class="new-collection__arrow new-collection__arrow--next" id="newCollectionNext" type="button" aria-label="Next products">
-        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <polyline points="9 18 15 12 9 6"/>
-        </svg>
-      </button>
+    <div class="showcase__viewport">
+      <div class="showcase__track" id="showcaseTrack"></div>
     </div>
   </section>
 
@@ -153,7 +139,7 @@
   </section>
 
   <!-- CRAFTED WITH INNOVATIONS (rendered by JS) -->
-  <div id="explodedProductRoot"></div>
+  <div id="craftedRoot"></div>
 
   <!-- ABOUT INNOVATION & R&D JOURNEY -->
   <section class="about-innovation" id="aboutInnovation" aria-label="About Innovation and R&D Journey">
