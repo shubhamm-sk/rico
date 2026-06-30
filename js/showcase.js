@@ -1,53 +1,58 @@
-// SHOWCASE SECTION: product data
+/**
+ * Premium Cinematic Product Showcase
+ * Self-contained module: renders slides from product data and drives auto-slider.
+ */
+
+// ── Product data (single source of truth) ──────────────────────────────────
 const products = [
   {
     image: 'iron.webp',
     name: 'Classic Iron',
     code: 'IRN-1001',
     discount: '(40% OFF)',
-    price: '₹1,299',
+    price: '₹ 1,299.00',
   },
   {
     image: 'iron2.webp',
     name: 'Pro Steam Iron',
     code: 'IRN-2002',
     discount: '(35% OFF)',
-    price: '₹1,799',
+    price: '₹ 1,799.00',
   },
   {
     image: 'juser.webp',
     name: 'Citrus Juicer',
     code: 'CJ-2510',
     discount: '(50% OFF)',
-    price: '₹1,499',
+    price: '₹ 1,499.00',
   },
   {
     image: 'Steel_Bowl.webp',
     name: 'Steel Mixing Bowl',
     code: 'SB-3005',
     discount: '(20% OFF)',
-    price: '₹899',
+    price: '₹ 899.00',
   },
   {
     image: 'table_fan.webp',
     name: 'Breeze Table Fan',
     code: 'TF-4012',
     discount: '(30% OFF)',
-    price: '₹2,199',
+    price: '₹ 2,199.00',
   },
   {
     image: 'torch.webp',
     name: 'Rechargeable Torch',
     code: 'TR-5050',
     discount: '(45% OFF)',
-    price: '₹799',
+    price: '₹ 799.00',
   },
   {
     image: 'xzy.jpg',
     name: 'Nutri Fresh',
     code: 'MG-2609',
     discount: '(67% OFF)',
-    price: '₹7,000',
+    price: '₹ 7,000.00',
   },
 ];
 
@@ -55,24 +60,30 @@ const AUTO_INTERVAL_MS = 5000;
 const TRANSITION_MS = 700;
 const EASING = 'cubic-bezier(.22,.61,.36,1)';
 const SWIPE_THRESHOLD = 50;
+const TOUCH_RESUME_MS = 4000;
 
-// SHOWCASE SECTION: render slides into track
+// ── Render slides into #showcaseTrack ──────────────────────────────────────
 function renderShowcase() {
   const track = document.getElementById('showcaseTrack');
   if (!track) return;
 
   track.innerHTML = products
     .map((item, index) => {
-      const discount = item.discount.replace(/[()]/g, '').trim();
+      const isReverse = index % 2 === 1;
+      const reverseClass = isReverse ? ' showcase__slide--reverse' : '';
 
       return `
-        <article class="showcase__slide" data-index="${index}" aria-hidden="${index === 0 ? 'false' : 'true'}">
+        <article
+          class="showcase__slide${reverseClass}"
+          data-index="${index}"
+          aria-hidden="${index === 0 ? 'false' : 'true'}"
+        >
           <div class="showcase__slide-bg" aria-hidden="true"></div>
           <div class="showcase__slide-inner">
             <div class="showcase__details">
               <h3 class="showcase__name">${item.name}</h3>
               <p class="showcase__code">${item.code}</p>
-              <p class="showcase__discount">${discount}</p>
+              <p class="showcase__discount">${item.discount}</p>
               <p class="showcase__price">${item.price}</p>
             </div>
             <div class="showcase__hero">
@@ -83,7 +94,7 @@ function renderShowcase() {
                     class="showcase__image"
                     src="assets/product/${item.image}"
                     alt="${item.name}"
-                    loading="${index < 2 ? 'eager' : 'lazy'}"
+                    loading="${index === 0 ? 'eager' : 'lazy'}"
                     decoding="async"
                   >
                 </div>
@@ -96,7 +107,7 @@ function renderShowcase() {
     .join('');
 }
 
-// SHOWCASE SECTION: carousel controller
+// ── Carousel controller ────────────────────────────────────────────────────
 function initShowcaseCarousel() {
   const section = document.getElementById('showcaseSection');
   const viewport = section?.querySelector('.showcase__viewport');
@@ -114,38 +125,49 @@ function initShowcaseCarousel() {
   let currentIndex = 0;
   let isTransitioning = false;
   let autoTimer = null;
-  let isPaused = false;
+  let touchResumeTimer = null;
   let slideWidth = 0;
+  let touchStartX = 0;
 
   measure();
   buildDots();
-  goTo(0, false);
-  startAuto();
+  goToSlide(0, false);
+  startAutoplay();
 
-  window.addEventListener('resize', debounce(() => {
-    measure();
-    goTo(currentIndex, false);
-  }, 150));
+  window.addEventListener(
+    'resize',
+    debounce(() => {
+      measure();
+      goToSlide(currentIndex, false);
+    }, 150)
+  );
 
   prevBtn?.addEventListener('click', () => {
-    pauseAuto();
-    goTo(currentIndex - 1);
-    scheduleAutoResume();
+    prevSlide();
+    resetAutoplay();
   });
 
   nextBtn?.addEventListener('click', () => {
-    pauseAuto();
-    goTo(currentIndex + 1);
-    scheduleAutoResume();
+    nextSlide();
+    resetAutoplay();
   });
 
-  section.addEventListener('mouseenter', pauseAuto);
-  section.addEventListener('mouseleave', startAuto);
+  [prevBtn, nextBtn].forEach((btn) => {
+    btn?.addEventListener('keydown', (event) => {
+      if (event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault();
+        btn.click();
+      }
+    });
+  });
+
+  section.addEventListener('mouseenter', stopAutoplay);
+  section.addEventListener('mouseleave', () => {
+    if (!touchResumeTimer) startAutoplay();
+  });
 
   viewport.addEventListener('touchstart', onTouchStart, { passive: true });
   viewport.addEventListener('touchend', onTouchEnd, { passive: true });
-
-  let touchStartX = 0;
 
   function measure() {
     slideWidth = viewport.offsetWidth;
@@ -158,17 +180,22 @@ function initShowcaseCarousel() {
 
   function onTouchStart(event) {
     touchStartX = event.changedTouches[0].clientX;
-    pauseAuto();
+    stopAutoplay();
+    if (touchResumeTimer) clearTimeout(touchResumeTimer);
   }
 
   function onTouchEnd(event) {
     const dx = event.changedTouches[0].clientX - touchStartX;
 
     if (Math.abs(dx) > SWIPE_THRESHOLD) {
-      goTo(dx < 0 ? currentIndex + 1 : currentIndex - 1);
+      if (dx < 0) nextSlide();
+      else prevSlide();
     }
 
-    scheduleAutoResume();
+    touchResumeTimer = setTimeout(() => {
+      touchResumeTimer = null;
+      if (!section.matches(':hover')) startAutoplay();
+    }, TOUCH_RESUME_MS);
   }
 
   function buildDots() {
@@ -176,13 +203,15 @@ function initShowcaseCarousel() {
       .map(
         (_, index) => `
           <button
-            class="showcase__dot${index === currentIndex ? ' is-active' : ''}"
+            class="showcase__dot${index === 0 ? ' is-active' : ''}"
             type="button"
             role="tab"
             aria-label="Go to product ${index + 1}"
-            aria-selected="${index === currentIndex ? 'true' : 'false'}"
+            aria-selected="${index === 0 ? 'true' : 'false'}"
             data-index="${index}"
-          ></button>
+          >
+            <span class="showcase__dot-fill" aria-hidden="true"></span>
+          </button>
         `
       )
       .join('');
@@ -191,14 +220,13 @@ function initShowcaseCarousel() {
       dot.addEventListener('click', () => {
         const index = Number(dot.dataset.index);
         if (Number.isNaN(index) || index === currentIndex) return;
-        pauseAuto();
-        goTo(index);
-        scheduleAutoResume();
+        goToSlide(index);
+        resetAutoplay();
       });
     });
   }
 
-  function goTo(index, animate = true) {
+  function goToSlide(index, animate = true) {
     if (isTransitioning && animate) return;
 
     const nextIndex = ((index % total) + total) % total;
@@ -238,35 +266,48 @@ function initShowcaseCarousel() {
     }
   }
 
+  function nextSlide() {
+    goToSlide(currentIndex + 1);
+  }
+
+  function prevSlide() {
+    goToSlide(currentIndex - 1);
+  }
+
   function updateDots() {
     dotsRoot.querySelectorAll('.showcase__dot').forEach((dot, index) => {
       const isActive = index === currentIndex;
       dot.classList.toggle('is-active', isActive);
       dot.setAttribute('aria-selected', isActive ? 'true' : 'false');
+
+      if (isActive) {
+        const fill = dot.querySelector('.showcase__dot-fill');
+        if (fill) {
+          fill.style.animation = 'none';
+          void fill.offsetWidth;
+          fill.style.animation = '';
+        }
+      }
     });
   }
 
-  function startAuto() {
-    clearInterval(autoTimer);
-    isPaused = false;
-    autoTimer = setInterval(() => goTo(currentIndex + 1), AUTO_INTERVAL_MS);
+  function startAutoplay() {
+    stopAutoplay();
+    autoTimer = setInterval(() => nextSlide(), AUTO_INTERVAL_MS);
   }
 
-  function pauseAuto() {
-    clearInterval(autoTimer);
-    autoTimer = null;
-    isPaused = true;
+  function stopAutoplay() {
+    if (autoTimer) {
+      clearInterval(autoTimer);
+      autoTimer = null;
+    }
   }
 
-  let resumeTimer = null;
-
-  function scheduleAutoResume() {
-    if (resumeTimer) clearTimeout(resumeTimer);
-    resumeTimer = setTimeout(() => {
-      if (!section.matches(':hover')) startAuto();
-      else isPaused = true;
-      resumeTimer = null;
-    }, AUTO_INTERVAL_MS);
+  function resetAutoplay() {
+    stopAutoplay();
+    if (!section.matches(':hover') && !touchResumeTimer) {
+      startAutoplay();
+    }
   }
 }
 
