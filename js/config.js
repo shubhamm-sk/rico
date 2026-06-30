@@ -1,13 +1,7 @@
 export const HERO_SLIDES = [
   {
-    image: 'assets/images/hero-product-lineup-1.jpg',
-    fallback: 'assets/images/hero-placeholder-1.svg',
-    bannerImage: null,
-  },
-  {
-    image: 'assets/images/hero-product-lineup-2.jpg',
-    fallback: 'assets/images/hero-placeholder-2.svg',
-    bannerImage: null,
+    image: 'assets/images/product/hero_image.png',
+    alt: 'Rian premium home appliances lineup featuring a stand mixer, juicer, food processor, steam iron, and mini chopper',
   },
 ];
 

@@ -350,27 +350,7 @@ img {
   height: 100%;
   object-fit: cover;
   object-position: center;
-}
-
-.hero-slide__overlay {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  pointer-events: none;
-}
-
-.hero-slide__upload-mount {
-  pointer-events: none;
-}
-
-.hero-slide.is-active .hero-slide__upload-mount {
-  pointer-events: auto;
-}
-
-.hero-slide:not(.is-active) .hero-slide__overlay {
-  visibility: hidden;
+  aspect-ratio: 1983 / 793;
 }
 
 /* Navigation arrows */
@@ -400,6 +380,12 @@ img {
 
 .hero__arrow--next {
   right: 20px;
+}
+
+.hero__arrow.is-hidden {
+  visibility: hidden;
+  pointer-events: none;
+  opacity: 0;
 }
 
 /* ============================================

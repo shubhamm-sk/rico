@@ -1,5 +1,4 @@
 import { HERO_SLIDES } from './config.js';
-import { ImageUploadSlot } from './imageUploadSlot.js';
 
 const AUTO_INTERVAL = 5500;
 const TRANSITION_MS = 800;
@@ -15,7 +14,6 @@ export function initHeroCarousel() {
   if (!track || !heroSection) return;
 
   const slides = [...HERO_SLIDES];
-  const uploadSlots = [];
   let currentIndex = 0;
   let isTransitioning = false;
   let autoTimer = null;
@@ -23,10 +21,10 @@ export function initHeroCarousel() {
   let isPaused = false;
 
   buildSlides();
+  updateArrowVisibility();
 
   function buildSlides() {
     track.innerHTML = '';
-    uploadSlots.length = 0;
 
     slides.forEach((slideData, index) => {
       const slide = document.createElement('div');
@@ -36,39 +34,22 @@ export function initHeroCarousel() {
       const img = document.createElement('img');
       img.className = 'hero-slide__image';
       img.src = slideData.image;
-      img.alt = `Rico product lineup ${index + 1}`;
+      img.alt = slideData.alt || 'Rico featured product banner';
+      img.width = 1983;
+      img.height = 793;
       img.loading = index === 0 ? 'eager' : 'lazy';
-      img.onerror = () => {
-        img.onerror = null;
-        img.src = slideData.fallback || `assets/images/hero-placeholder-${(index % 2) + 1}.svg`;
-      };
 
-      const overlay = document.createElement('div');
-      overlay.className = 'hero-slide__overlay';
-
-      const uploadMount = document.createElement('div');
-      uploadMount.className = 'hero-slide__upload-mount';
-
-      const slot = ImageUploadSlot({
-        container: uploadMount,
-        placeholderLine1: 'Add Your',
-        placeholderLine2: 'HERO BANNER',
-        placeholderButton: 'Here',
-        initialImage: slideData.bannerImage,
-        variant: 'hero',
-        onChange: (url) => {
-          slides[index].bannerImage = url;
-        },
-      });
-
-      uploadSlots.push(slot);
-      overlay.appendChild(uploadMount);
       slide.appendChild(img);
-      slide.appendChild(overlay);
       track.appendChild(slide);
     });
 
     updateSlidePositions(false);
+  }
+
+  function updateArrowVisibility() {
+    const hideArrows = slides.length <= 1;
+    prevBtn?.classList.toggle('is-hidden', hideArrows);
+    nextBtn?.classList.toggle('is-hidden', hideArrows);
   }
 
   function getOffset(index) {
@@ -110,10 +91,12 @@ export function initHeroCarousel() {
   }
 
   function next() {
+    if (slides.length <= 1) return;
     goTo(currentIndex + 1);
   }
 
   function prev() {
+    if (slides.length <= 1) return;
     goTo(currentIndex - 1);
   }
 
