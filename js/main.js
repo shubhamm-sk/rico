@@ -2,6 +2,7 @@ import { initHeader } from './header.js';
 import { initHeroCarousel } from './heroCarousel.js';
 import { initShowcase } from './showcase.js';
 import { initTopSellingCarousel } from './topSellingCarousel.js';
+import { initCrafted } from './crafted.js';
 import { initAboutVision } from './aboutVision.js';
 import { initTestimonialCarousel } from './testimonialCarousel.js';
 import { initWhyRicoCarousel } from './whyRicoCarousel.js';
@@ -17,6 +18,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initHeroCarousel();
   initShowcase();
   initTopSellingCarousel();
+  initCrafted();
   initAboutVision();
   initTestimonialCarousel();
   initWhyRicoCarousel();
