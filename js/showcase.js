@@ -136,7 +136,10 @@ function renderShowcase() {
   const chunkSize = getChunkSize();
 
   track.innerHTML = groups
-    .map((group, groupIndex) => {
+    .slice()
+    .reverse()
+    .map((group, reversedPos) => {
+      const groupIndex = groups.length - 1 - reversedPos;
       const isSingleInPair = group.length === 1 && chunkSize === 2;
       const innerClass = isSingleInPair ? ' showcase__slide-inner--single' : '';
 
@@ -179,15 +182,35 @@ function createShowcaseCarousel() {
   }
 
   let groups = getSlideGroups();
-  let slides = [...track.querySelectorAll('.showcase__slide')];
-  let total = slides.length;
+  let slides = [];
+  let total = 0;
   let currentIndex = 0;
   let anchorProductIndex = 0;
   let isTransitioning = false;
-  let autoTimer = null;
+  let autoplayTimer = null;
   let touchResumeTimer = null;
   let slideWidth = 0;
   let touchStartX = 0;
+  let isHovered = false;
+
+  /** Map logical slide index to track translateX (reversed DOM → left-to-right motion). */
+  function getTrackOffset(logicalIndex) {
+    return (total - 1 - logicalIndex) * slideWidth;
+  }
+
+  function syncSlides() {
+    slides = groups.map((_, index) =>
+      track.querySelector(`.showcase__slide[data-group-index="${index}"]`)
+    ).filter(Boolean);
+    total = slides.length;
+  }
+
+  function applyTrackTransform(logicalIndex, animate = true) {
+    track.style.transition = animate
+      ? `transform ${TRANSITION_MS}ms ${EASING}`
+      : 'none';
+    track.style.transform = `translate3d(-${getTrackOffset(logicalIndex)}px, 0, 0)`;
+  }
 
   const onPrevClick = () => {
     prevSlide();
@@ -199,9 +222,16 @@ function createShowcaseCarousel() {
     resetAutoplay();
   };
 
-  const onMouseEnter = () => stopAutoplay();
+  const onMouseEnter = () => {
+    isHovered = true;
+    stopAutoplay();
+  };
+
   const onMouseLeave = () => {
-    if (!touchResumeTimer) startAutoplay();
+    isHovered = false;
+    if (!touchResumeTimer) {
+      resetAutoplay();
+    }
   };
 
   const onKeydown = (event) => {
@@ -215,8 +245,8 @@ function createShowcaseCarousel() {
     prevBtn?.addEventListener('click', onPrevClick);
     nextBtn?.addEventListener('click', onNextClick);
     [prevBtn, nextBtn].forEach((btn) => btn?.addEventListener('keydown', onKeydown));
-    section.addEventListener('mouseenter', onMouseEnter);
-    section.addEventListener('mouseleave', onMouseLeave);
+    viewport.addEventListener('mouseenter', onMouseEnter);
+    viewport.addEventListener('mouseleave', onMouseLeave);
     viewport.addEventListener('touchstart', onTouchStart, { passive: true });
     viewport.addEventListener('touchend', onTouchEnd, { passive: true });
   }
@@ -225,16 +255,15 @@ function createShowcaseCarousel() {
     prevBtn?.removeEventListener('click', onPrevClick);
     nextBtn?.removeEventListener('click', onNextClick);
     [prevBtn, nextBtn].forEach((btn) => btn?.removeEventListener('keydown', onKeydown));
-    section.removeEventListener('mouseenter', onMouseEnter);
-    section.removeEventListener('mouseleave', onMouseLeave);
+    viewport.removeEventListener('mouseenter', onMouseEnter);
+    viewport.removeEventListener('mouseleave', onMouseLeave);
     viewport.removeEventListener('touchstart', onTouchStart);
     viewport.removeEventListener('touchend', onTouchEnd);
   }
 
   function refreshDom() {
     groups = getSlideGroups();
-    slides = [...track.querySelectorAll('.showcase__slide')];
-    total = slides.length;
+    syncSlides();
     buildDots();
     measure();
   }
@@ -250,15 +279,23 @@ function createShowcaseCarousel() {
     slideWidth = viewport.offsetWidth;
     track.style.width = `${slideWidth * total}px`;
     slides.forEach((slide) => {
+      if (!slide) return;
       slide.style.width = `${slideWidth}px`;
       slide.style.flexBasis = `${slideWidth}px`;
     });
   }
 
+  function clearTouchResumeTimer() {
+    if (touchResumeTimer) {
+      clearTimeout(touchResumeTimer);
+      touchResumeTimer = null;
+    }
+  }
+
   function onTouchStart(event) {
     touchStartX = event.changedTouches[0].clientX;
     stopAutoplay();
-    if (touchResumeTimer) clearTimeout(touchResumeTimer);
+    clearTouchResumeTimer();
   }
 
   function onTouchEnd(event) {
@@ -268,11 +305,15 @@ function createShowcaseCarousel() {
       if (dx < 0) nextSlide();
       else prevSlide();
       resetAutoplay();
+      return;
     }
 
+    clearTouchResumeTimer();
     touchResumeTimer = setTimeout(() => {
       touchResumeTimer = null;
-      if (!section.matches(':hover')) startAutoplay();
+      if (!isHovered) {
+        resetAutoplay();
+      }
     }, TOUCH_RESUME_MS);
   }
 
@@ -312,22 +353,21 @@ function createShowcaseCarousel() {
     if (nextIndex === currentIndex && animate) return;
 
     const prevIndex = currentIndex;
-    isTransitioning = animate;
+    const isLoopWrap = prevIndex === total - 1 && nextIndex === 0;
+    isTransitioning = animate && !isLoopWrap;
 
     if (prevIndex !== nextIndex) {
       slides[prevIndex]?.classList.remove('is-active');
-      slides[prevIndex]?.classList.add('is-leaving');
+      if (animate && !isLoopWrap) {
+        slides[prevIndex]?.classList.add('is-leaving');
+      }
       slides[prevIndex]?.setAttribute('aria-hidden', 'true');
     }
 
     currentIndex = nextIndex;
     anchorProductIndex = getGlobalIndex(currentIndex, 0, groups);
 
-    track.style.transition = animate
-      ? `transform ${TRANSITION_MS}ms ${EASING}`
-      : 'none';
-    track.style.transform = `translate3d(-${currentIndex * slideWidth}px, 0, 0)`;
-
+    applyTrackTransform(currentIndex, animate && !isLoopWrap);
     updateDots();
 
     const finish = () => {
@@ -339,7 +379,7 @@ function createShowcaseCarousel() {
       isTransitioning = false;
     };
 
-    if (animate && prevIndex !== nextIndex) {
+    if (animate && prevIndex !== nextIndex && !isLoopWrap) {
       setTimeout(finish, TRANSITION_MS);
     } else {
       finish();
@@ -352,6 +392,11 @@ function createShowcaseCarousel() {
 
   function prevSlide() {
     goToSlide(currentIndex - 1);
+  }
+
+  /** Autoplay tick — advances groups forward with left-to-right track motion. */
+  function autoplayStep() {
+    nextSlide();
   }
 
   function updateDots() {
@@ -373,19 +418,19 @@ function createShowcaseCarousel() {
 
   function startAutoplay() {
     stopAutoplay();
-    autoTimer = setInterval(() => nextSlide(), AUTO_INTERVAL_MS);
+    autoplayTimer = setInterval(autoplayStep, AUTO_INTERVAL_MS);
   }
 
   function stopAutoplay() {
-    if (autoTimer) {
-      clearInterval(autoTimer);
-      autoTimer = null;
+    if (autoplayTimer) {
+      clearInterval(autoplayTimer);
+      autoplayTimer = null;
     }
   }
 
   function resetAutoplay() {
     stopAutoplay();
-    if (!section.matches(':hover') && !touchResumeTimer) {
+    if (!isHovered && !touchResumeTimer) {
       startAutoplay();
     }
   }
@@ -397,7 +442,7 @@ function createShowcaseCarousel() {
 
   function destroy() {
     stopAutoplay();
-    if (touchResumeTimer) clearTimeout(touchResumeTimer);
+    clearTouchResumeTimer();
     unbindEvents();
   }
 

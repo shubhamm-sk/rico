@@ -503,7 +503,7 @@ img {
 
 .showcase__slide.is-leaving .showcase__slide-inner {
   opacity: 0;
-  transform: translate3d(-28px, 0, 0) scale(0.94);
+  transform: translate3d(28px, 0, 0) scale(0.94);
 }
 
 /* Each product: text column + image column */
