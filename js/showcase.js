@@ -58,7 +58,6 @@ const products = [
 
 const AUTO_INTERVAL_MS = 5000;
 const TRANSITION_MS = 700;
-const EASING = 'cubic-bezier(.22,.61,.36,1)';
 const SWIPE_THRESHOLD = 50;
 const TOUCH_RESUME_MS = 4000;
 const MOBILE_BREAKPOINT = 768;
@@ -127,6 +126,34 @@ function renderProductBlock(item, slotClass, globalIndex, eager) {
   `;
 }
 
+// ── Render one slide group (optionally a loop clone) ───────────────────────
+function renderSlideGroup(group, groupIndex, groups, chunkSize, options = {}) {
+  const { isClone = false, eager = false } = options;
+  const isSingleInPair = group.length === 1 && chunkSize === 2;
+  const innerClass = isSingleInPair ? ' showcase__slide-inner--single' : '';
+  const cloneClass = isClone ? ' showcase__slide--clone' : '';
+  const cloneAttr = isClone ? ' data-clone="prefix"' : ` data-group-index="${groupIndex}"`;
+
+  const blocks = group
+    .map((item, itemIndex) => {
+      const slotClass = itemIndex === 0 ? 'showcase__product--a' : 'showcase__product--b';
+      const globalIndex = getGlobalIndex(groupIndex, itemIndex, groups);
+      return renderProductBlock(item, slotClass, globalIndex, eager);
+    })
+    .join('');
+
+  return `
+    <article
+      class="showcase__slide${cloneClass}"
+      ${cloneAttr}
+      aria-hidden="true"
+    >
+      <div class="showcase__slide-bg" aria-hidden="true"></div>
+      <div class="showcase__slide-inner${innerClass}">${blocks}</div>
+    </article>
+  `;
+}
+
 // ── Render all slide groups into #showcaseTrack ────────────────────────────
 function renderShowcase() {
   const track = document.getElementById('showcaseTrack');
@@ -135,35 +162,23 @@ function renderShowcase() {
   const groups = getSlideGroups();
   const chunkSize = getChunkSize();
 
-  track.innerHTML = groups
+  const reversedSlides = groups
     .slice()
     .reverse()
     .map((group, reversedPos) => {
       const groupIndex = groups.length - 1 - reversedPos;
-      const isSingleInPair = group.length === 1 && chunkSize === 2;
-      const innerClass = isSingleInPair ? ' showcase__slide-inner--single' : '';
-
-      const blocks = group
-        .map((item, itemIndex) => {
-          const slotClass = itemIndex === 0 ? 'showcase__product--a' : 'showcase__product--b';
-          const globalIndex = getGlobalIndex(groupIndex, itemIndex, groups);
-          const eager = groupIndex === 0;
-          return renderProductBlock(item, slotClass, globalIndex, eager);
-        })
-        .join('');
-
-      return `
-        <article
-          class="showcase__slide"
-          data-group-index="${groupIndex}"
-          aria-hidden="${groupIndex === 0 ? 'false' : 'true'}"
-        >
-          <div class="showcase__slide-bg" aria-hidden="true"></div>
-          <div class="showcase__slide-inner${innerClass}">${blocks}</div>
-        </article>
-      `;
+      return renderSlideGroup(group, groupIndex, groups, chunkSize, {
+        eager: groupIndex <= 1,
+      });
     })
     .join('');
+
+  const loopClone = renderSlideGroup(groups[0], 0, groups, chunkSize, {
+    isClone: true,
+    eager: true,
+  });
+
+  track.innerHTML = loopClone + reversedSlides;
 
   return groups;
 }
@@ -189,13 +204,14 @@ function createShowcaseCarousel() {
   let isTransitioning = false;
   let autoplayTimer = null;
   let touchResumeTimer = null;
+  let transitionFallbackTimer = null;
   let slideWidth = 0;
   let touchStartX = 0;
   let isHovered = false;
 
-  /** Map logical slide index to track translateX (reversed DOM → left-to-right motion). */
+  /** Pixel offset for logical index (prefix clone sits at offset 0). */
   function getTrackOffset(logicalIndex) {
-    return (total - 1 - logicalIndex) * slideWidth;
+    return (groups.length - logicalIndex) * slideWidth;
   }
 
   function syncSlides() {
@@ -205,11 +221,103 @@ function createShowcaseCarousel() {
     total = slides.length;
   }
 
-  function applyTrackTransform(logicalIndex, animate = true) {
-    track.style.transition = animate
-      ? `transform ${TRANSITION_MS}ms ${EASING}`
-      : 'none';
-    track.style.transform = `translate3d(-${getTrackOffset(logicalIndex)}px, 0, 0)`;
+  function setTrackOffsetPx(offsetPx, animate = true) {
+    const x = Math.round(offsetPx);
+
+    if (!animate) {
+      track.classList.add('is-instant');
+      track.style.transform = `translate3d(-${x}px, 0, 0)`;
+      requestAnimationFrame(() => {
+        track.classList.remove('is-instant');
+      });
+      return;
+    }
+
+    track.classList.remove('is-instant');
+    requestAnimationFrame(() => {
+      track.style.transform = `translate3d(-${x}px, 0, 0)`;
+    });
+  }
+
+  function clearTransitionFallback() {
+    if (transitionFallbackTimer) {
+      clearTimeout(transitionFallbackTimer);
+      transitionFallbackTimer = null;
+    }
+  }
+
+  function waitForTrackTransition(onComplete) {
+    clearTransitionFallback();
+    let finished = false;
+
+    const finish = () => {
+      if (finished) return;
+      finished = true;
+      track.removeEventListener('transitionend', onTransitionEnd);
+      clearTransitionFallback();
+      onComplete();
+    };
+
+    const onTransitionEnd = (event) => {
+      if (event.target !== track || event.propertyName !== 'transform') return;
+      finish();
+    };
+
+    track.addEventListener('transitionend', onTransitionEnd);
+    transitionFallbackTimer = setTimeout(finish, TRANSITION_MS + 80);
+  }
+
+  function activateSlide(logicalIndex) {
+    slides.forEach((slide, index) => {
+      if (!slide) return;
+      const isActive = index === logicalIndex;
+      slide.classList.toggle('is-active', isActive);
+      slide.setAttribute('aria-hidden', isActive ? 'false' : 'true');
+    });
+  }
+
+  function preloadSlideImages(logicalIndex) {
+    const slide = slides[logicalIndex];
+    if (!slide) return;
+
+    slide.querySelectorAll('.showcase__image').forEach((img) => {
+      if (!(img instanceof HTMLImageElement)) return;
+      if (img.complete && img.naturalWidth > 0) return;
+      img.loading = 'eager';
+      img.decode?.().catch(() => {});
+    });
+  }
+
+  function preloadAdjacentSlides() {
+    if (total <= 1) return;
+    preloadSlideImages((currentIndex + 1) % total);
+    preloadSlideImages((currentIndex - 1 + total) % total);
+  }
+
+  function completeLoopWrap() {
+    setTrackOffsetPx(getTrackOffset(0), false);
+    activateSlide(0);
+    isTransitioning = false;
+    preloadAdjacentSlides();
+  }
+
+  function runLoopWrapTransition() {
+    isTransitioning = true;
+    slides[currentIndex]?.classList.remove('is-active');
+    slides[currentIndex]?.setAttribute('aria-hidden', 'true');
+
+    currentIndex = 0;
+    anchorProductIndex = getGlobalIndex(0, 0, groups);
+    updateDots();
+    preloadSlideImages(0);
+
+    setTrackOffsetPx(0, true);
+
+    waitForTrackTransition(() => {
+      requestAnimationFrame(() => {
+        completeLoopWrap();
+      });
+    });
   }
 
   const onPrevClick = () => {
@@ -276,10 +384,10 @@ function createShowcaseCarousel() {
   }
 
   function measure() {
-    slideWidth = viewport.offsetWidth;
-    track.style.width = `${slideWidth * total}px`;
-    slides.forEach((slide) => {
-      if (!slide) return;
+    slideWidth = Math.round(viewport.offsetWidth);
+    const trackSlides = track.querySelectorAll('.showcase__slide');
+    track.style.width = `${slideWidth * trackSlides.length}px`;
+    trackSlides.forEach((slide) => {
       slide.style.width = `${slideWidth}px`;
       slide.style.flexBasis = `${slideWidth}px`;
     });
@@ -353,37 +461,39 @@ function createShowcaseCarousel() {
     if (nextIndex === currentIndex && animate) return;
 
     const prevIndex = currentIndex;
-    const isLoopWrap = prevIndex === total - 1 && nextIndex === 0;
-    isTransitioning = animate && !isLoopWrap;
+    const isLoopWrap = prevIndex === total - 1 && nextIndex === 0 && animate;
+
+    if (isLoopWrap) {
+      runLoopWrapTransition();
+      return;
+    }
 
     if (prevIndex !== nextIndex) {
       slides[prevIndex]?.classList.remove('is-active');
-      if (animate && !isLoopWrap) {
-        slides[prevIndex]?.classList.add('is-leaving');
-      }
       slides[prevIndex]?.setAttribute('aria-hidden', 'true');
     }
 
     currentIndex = nextIndex;
     anchorProductIndex = getGlobalIndex(currentIndex, 0, groups);
+    preloadSlideImages(currentIndex);
 
-    applyTrackTransform(currentIndex, animate && !isLoopWrap);
-    updateDots();
+    if (animate && prevIndex !== nextIndex) {
+      isTransitioning = true;
+      updateDots();
+      setTrackOffsetPx(getTrackOffset(currentIndex), true);
 
-    const finish = () => {
-      if (prevIndex !== nextIndex) {
-        slides[prevIndex]?.classList.remove('is-leaving');
-      }
-      slides[currentIndex]?.classList.add('is-active');
-      slides[currentIndex]?.setAttribute('aria-hidden', 'false');
-      isTransitioning = false;
-    };
-
-    if (animate && prevIndex !== nextIndex && !isLoopWrap) {
-      setTimeout(finish, TRANSITION_MS);
-    } else {
-      finish();
+      waitForTrackTransition(() => {
+        activateSlide(currentIndex);
+        isTransitioning = false;
+        preloadAdjacentSlides();
+      });
+      return;
     }
+
+    setTrackOffsetPx(getTrackOffset(currentIndex), false);
+    updateDots();
+    activateSlide(currentIndex);
+    preloadAdjacentSlides();
   }
 
   function nextSlide() {
@@ -396,6 +506,7 @@ function createShowcaseCarousel() {
 
   /** Autoplay tick — advances groups forward with left-to-right track motion. */
   function autoplayStep() {
+    if (isTransitioning) return;
     nextSlide();
   }
 
@@ -408,9 +519,12 @@ function createShowcaseCarousel() {
       if (isActive) {
         const fill = dot.querySelector('.showcase__dot-fill');
         if (fill) {
-          fill.style.animation = 'none';
-          void fill.offsetWidth;
-          fill.style.animation = '';
+          requestAnimationFrame(() => {
+            fill.style.animation = 'none';
+            requestAnimationFrame(() => {
+              fill.style.animation = '';
+            });
+          });
         }
       }
     });
@@ -443,6 +557,7 @@ function createShowcaseCarousel() {
   function destroy() {
     stopAutoplay();
     clearTouchResumeTimer();
+    clearTransitionFallback();
     unbindEvents();
   }
 
