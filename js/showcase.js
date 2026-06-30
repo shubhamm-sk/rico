@@ -1,6 +1,6 @@
 /**
  * Premium Cinematic Product Showcase
- * Self-contained module: renders slides from product data and drives auto-slider.
+ * Groups products into pairs (desktop/tablet) or singles (mobile) per slide.
  */
 
 // ── Product data (single source of truth) ──────────────────────────────────
@@ -61,54 +61,112 @@ const TRANSITION_MS = 700;
 const EASING = 'cubic-bezier(.22,.61,.36,1)';
 const SWIPE_THRESHOLD = 50;
 const TOUCH_RESUME_MS = 4000;
+const MOBILE_BREAKPOINT = 768;
 
-// ── Render slides into #showcaseTrack ──────────────────────────────────────
+// ── Helpers ────────────────────────────────────────────────────────────────
+function chunkArray(arr, size) {
+  const chunks = [];
+  for (let i = 0; i < arr.length; i += size) {
+    chunks.push(arr.slice(i, i + size));
+  }
+  return chunks;
+}
+
+function getChunkSize() {
+  return window.innerWidth < MOBILE_BREAKPOINT ? 1 : 2;
+}
+
+function getSlideGroups() {
+  return chunkArray(products, getChunkSize());
+}
+
+function getGlobalIndex(groupIndex, itemIndex, groups) {
+  let index = 0;
+  for (let g = 0; g < groupIndex; g += 1) {
+    index += groups[g].length;
+  }
+  return index + itemIndex;
+}
+
+function findGroupIndexForProduct(productIndex, groups) {
+  let cursor = 0;
+  for (let g = 0; g < groups.length; g += 1) {
+    if (productIndex >= cursor && productIndex < cursor + groups[g].length) {
+      return g;
+    }
+    cursor += groups[g].length;
+  }
+  return 0;
+}
+
+// ── Render one product block inside a slide ────────────────────────────────
+function renderProductBlock(item, slotClass, globalIndex, eager) {
+  return `
+    <div class="showcase__product ${slotClass}" data-product-index="${globalIndex}">
+      <div class="showcase__details">
+        <h3 class="showcase__name">${item.name}</h3>
+        <p class="showcase__code">${item.code}</p>
+        <p class="showcase__discount">${item.discount}</p>
+        <p class="showcase__price">${item.price}</p>
+      </div>
+      <div class="showcase__visual">
+        <div class="showcase__glow" aria-hidden="true"></div>
+        <div class="showcase__float">
+          <div class="showcase__image-wrap">
+            <img
+              class="showcase__image"
+              src="assets/product/${item.image}"
+              alt="${item.name}"
+              loading="${eager ? 'eager' : 'lazy'}"
+              decoding="async"
+            >
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+// ── Render all slide groups into #showcaseTrack ────────────────────────────
 function renderShowcase() {
   const track = document.getElementById('showcaseTrack');
-  if (!track) return;
+  if (!track) return getSlideGroups();
 
-  track.innerHTML = products
-    .map((item, index) => {
-      const isReverse = index % 2 === 1;
-      const reverseClass = isReverse ? ' showcase__slide--reverse' : '';
+  const groups = getSlideGroups();
+  const chunkSize = getChunkSize();
+
+  track.innerHTML = groups
+    .map((group, groupIndex) => {
+      const isSingleInPair = group.length === 1 && chunkSize === 2;
+      const innerClass = isSingleInPair ? ' showcase__slide-inner--single' : '';
+
+      const blocks = group
+        .map((item, itemIndex) => {
+          const slotClass = itemIndex === 0 ? 'showcase__product--a' : 'showcase__product--b';
+          const globalIndex = getGlobalIndex(groupIndex, itemIndex, groups);
+          const eager = groupIndex === 0;
+          return renderProductBlock(item, slotClass, globalIndex, eager);
+        })
+        .join('');
 
       return `
         <article
-          class="showcase__slide${reverseClass}"
-          data-index="${index}"
-          aria-hidden="${index === 0 ? 'false' : 'true'}"
+          class="showcase__slide"
+          data-group-index="${groupIndex}"
+          aria-hidden="${groupIndex === 0 ? 'false' : 'true'}"
         >
           <div class="showcase__slide-bg" aria-hidden="true"></div>
-          <div class="showcase__slide-inner">
-            <div class="showcase__details">
-              <h3 class="showcase__name">${item.name}</h3>
-              <p class="showcase__code">${item.code}</p>
-              <p class="showcase__discount">${item.discount}</p>
-              <p class="showcase__price">${item.price}</p>
-            </div>
-            <div class="showcase__hero">
-              <div class="showcase__glow" aria-hidden="true"></div>
-              <div class="showcase__float">
-                <div class="showcase__image-wrap">
-                  <img
-                    class="showcase__image"
-                    src="assets/product/${item.image}"
-                    alt="${item.name}"
-                    loading="${index === 0 ? 'eager' : 'lazy'}"
-                    decoding="async"
-                  >
-                </div>
-              </div>
-            </div>
-          </div>
+          <div class="showcase__slide-inner${innerClass}">${blocks}</div>
         </article>
       `;
     })
     .join('');
+
+  return groups;
 }
 
 // ── Carousel controller ────────────────────────────────────────────────────
-function initShowcaseCarousel() {
+function createShowcaseCarousel() {
   const section = document.getElementById('showcaseSection');
   const viewport = section?.querySelector('.showcase__viewport');
   const track = document.getElementById('showcaseTrack');
@@ -116,58 +174,77 @@ function initShowcaseCarousel() {
   const nextBtn = document.getElementById('showcaseNext');
   const dotsRoot = document.getElementById('showcaseDots');
 
-  if (!section || !viewport || !track || !dotsRoot) return;
+  if (!section || !viewport || !track || !dotsRoot) {
+    return { destroy() {}, getAnchorProductIndex: () => 0, isMobile: getChunkSize() === 1 };
+  }
 
-  const slides = [...track.querySelectorAll('.showcase__slide')];
-  const total = slides.length;
-  if (total === 0) return;
-
+  let groups = getSlideGroups();
+  let slides = [...track.querySelectorAll('.showcase__slide')];
+  let total = slides.length;
   let currentIndex = 0;
+  let anchorProductIndex = 0;
   let isTransitioning = false;
   let autoTimer = null;
   let touchResumeTimer = null;
   let slideWidth = 0;
   let touchStartX = 0;
 
-  measure();
-  buildDots();
-  goToSlide(0, false);
-  startAutoplay();
-
-  window.addEventListener(
-    'resize',
-    debounce(() => {
-      measure();
-      goToSlide(currentIndex, false);
-    }, 150)
-  );
-
-  prevBtn?.addEventListener('click', () => {
+  const onPrevClick = () => {
     prevSlide();
     resetAutoplay();
-  });
+  };
 
-  nextBtn?.addEventListener('click', () => {
+  const onNextClick = () => {
     nextSlide();
     resetAutoplay();
-  });
+  };
 
-  [prevBtn, nextBtn].forEach((btn) => {
-    btn?.addEventListener('keydown', (event) => {
-      if (event.key === 'Enter' || event.key === ' ') {
-        event.preventDefault();
-        btn.click();
-      }
-    });
-  });
-
-  section.addEventListener('mouseenter', stopAutoplay);
-  section.addEventListener('mouseleave', () => {
+  const onMouseEnter = () => stopAutoplay();
+  const onMouseLeave = () => {
     if (!touchResumeTimer) startAutoplay();
-  });
+  };
 
-  viewport.addEventListener('touchstart', onTouchStart, { passive: true });
-  viewport.addEventListener('touchend', onTouchEnd, { passive: true });
+  const onKeydown = (event) => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      event.currentTarget.click();
+    }
+  };
+
+  function bindEvents() {
+    prevBtn?.addEventListener('click', onPrevClick);
+    nextBtn?.addEventListener('click', onNextClick);
+    [prevBtn, nextBtn].forEach((btn) => btn?.addEventListener('keydown', onKeydown));
+    section.addEventListener('mouseenter', onMouseEnter);
+    section.addEventListener('mouseleave', onMouseLeave);
+    viewport.addEventListener('touchstart', onTouchStart, { passive: true });
+    viewport.addEventListener('touchend', onTouchEnd, { passive: true });
+  }
+
+  function unbindEvents() {
+    prevBtn?.removeEventListener('click', onPrevClick);
+    nextBtn?.removeEventListener('click', onNextClick);
+    [prevBtn, nextBtn].forEach((btn) => btn?.removeEventListener('keydown', onKeydown));
+    section.removeEventListener('mouseenter', onMouseEnter);
+    section.removeEventListener('mouseleave', onMouseLeave);
+    viewport.removeEventListener('touchstart', onTouchStart);
+    viewport.removeEventListener('touchend', onTouchEnd);
+  }
+
+  function refreshDom() {
+    groups = getSlideGroups();
+    slides = [...track.querySelectorAll('.showcase__slide')];
+    total = slides.length;
+    buildDots();
+    measure();
+  }
+
+  function init() {
+    refreshDom();
+    goToSlide(0, false);
+    startAutoplay();
+    bindEvents();
+  }
 
   function measure() {
     slideWidth = viewport.offsetWidth;
@@ -190,6 +267,7 @@ function initShowcaseCarousel() {
     if (Math.abs(dx) > SWIPE_THRESHOLD) {
       if (dx < 0) nextSlide();
       else prevSlide();
+      resetAutoplay();
     }
 
     touchResumeTimer = setTimeout(() => {
@@ -199,14 +277,14 @@ function initShowcaseCarousel() {
   }
 
   function buildDots() {
-    dotsRoot.innerHTML = products
+    dotsRoot.innerHTML = groups
       .map(
         (_, index) => `
           <button
             class="showcase__dot${index === 0 ? ' is-active' : ''}"
             type="button"
             role="tab"
-            aria-label="Go to product ${index + 1}"
+            aria-label="Go to product group ${index + 1}"
             aria-selected="${index === 0 ? 'true' : 'false'}"
             data-index="${index}"
           >
@@ -227,6 +305,7 @@ function initShowcaseCarousel() {
   }
 
   function goToSlide(index, animate = true) {
+    if (total === 0) return;
     if (isTransitioning && animate) return;
 
     const nextIndex = ((index % total) + total) % total;
@@ -242,6 +321,7 @@ function initShowcaseCarousel() {
     }
 
     currentIndex = nextIndex;
+    anchorProductIndex = getGlobalIndex(currentIndex, 0, groups);
 
     track.style.transition = animate
       ? `transform ${TRANSITION_MS}ms ${EASING}`
@@ -309,11 +389,62 @@ function initShowcaseCarousel() {
       startAutoplay();
     }
   }
+
+  function goToProductAnchor(productIndex) {
+    const groupIndex = findGroupIndexForProduct(productIndex, groups);
+    goToSlide(groupIndex, false);
+  }
+
+  function destroy() {
+    stopAutoplay();
+    if (touchResumeTimer) clearTimeout(touchResumeTimer);
+    unbindEvents();
+  }
+
+  init();
+
+  return {
+    destroy,
+    measure,
+    goToSlide,
+    goToProductAnchor,
+    getAnchorProductIndex: () => anchorProductIndex,
+    get currentIndex() {
+      return currentIndex;
+    },
+    get isMobile() {
+      return getChunkSize() === 1;
+    },
+  };
 }
+
+let carouselController = null;
+let lastChunkSize = getChunkSize();
 
 export function initShowcase() {
   renderShowcase();
-  initShowcaseCarousel();
+  carouselController?.destroy();
+  carouselController = createShowcaseCarousel();
+  lastChunkSize = getChunkSize();
+
+  window.addEventListener(
+    'resize',
+    debounce(() => {
+      const newChunkSize = getChunkSize();
+      const anchor = carouselController?.getAnchorProductIndex() ?? 0;
+
+      if (newChunkSize !== lastChunkSize) {
+        lastChunkSize = newChunkSize;
+        carouselController?.destroy();
+        renderShowcase();
+        carouselController = createShowcaseCarousel();
+        carouselController.goToProductAnchor(anchor);
+      } else {
+        carouselController?.measure();
+        carouselController?.goToSlide(carouselController.currentIndex, false);
+      }
+    }, 150)
+  );
 }
 
 function debounce(fn, delay) {
