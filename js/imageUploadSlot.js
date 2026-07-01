@@ -1,6 +1,6 @@
 /**
  * Reusable ImageUploadSlot component.
- * Used for About Innovation banner, Founder images, and Hero banner overlays.
+ * Used for About Innovation banner and Hero banner overlays.
  *
  * @param {Object} options
  * @param {HTMLElement} options.container - Parent element to mount into
@@ -9,7 +9,7 @@
  * @param {string} [options.placeholderButton='Here']
  * @param {string|null} [options.initialImage=null]
  * @param {Function} [options.onChange] - Called with (imageUrl|null) when image changes
- * @param {string} [options.variant='hero'] - 'hero' | 'banner' | 'portrait'
+ * @param {string} [options.variant='hero'] - 'hero' | 'banner'
  * @returns {{ getImage: () => string|null, setImage: (url: string|null) => void, destroy: () => void }}
  */
 export function ImageUploadSlot({

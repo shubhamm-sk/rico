@@ -21,13 +21,8 @@ export const TOP_SELLING_PRODUCTS = [
   { label: 'Product-7', image: 'assets/images/product7.jpg', color: 'linear-gradient(to bottom, #241a33, #6b2e6b)' },
 ];
 
-export const VISION_SECTION_DATA = {
+export const ABOUT_INNOVATION_DATA = {
   aboutHeading: 'About Innovation<br>&amp; R&amp;D Journey',
-  visionHeading: 'Vision',
-  quote:
-    'A future where every home owns better products — designed to perform longer, waste less, and make everyday life easier.',
-  foundersLine: 'Mr. <strong>Manoj</strong> and Mr. <strong>Vikram</strong> Thakur',
-  foundersRole: '(Founders and Directors of Rico)',
 };
 
 export const NAV_LINKS = [

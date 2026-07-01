@@ -3,7 +3,7 @@ import { initHeroCarousel } from './heroCarousel.js';
 import { initShowcase } from './showcase.js';
 import { initTopSellingCarousel } from './topSellingCarousel.js';
 import { initCrafted } from './crafted.js';
-import { initAboutVision } from './aboutVision.js';
+import { initAboutInnovation } from './aboutInnovation.js';
 import { initTestimonialCarousel } from './testimonialCarousel.js';
 import { initWhyRicoCarousel } from './whyRicoCarousel.js';
 import { initProductVideos } from './productVideos.js';
@@ -19,7 +19,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initShowcase();
   initTopSellingCarousel();
   initCrafted();
-  initAboutVision();
+  initAboutInnovation();
   initTestimonialCarousel();
   initWhyRicoCarousel();
   initProductVideos();

@@ -909,58 +909,6 @@ img {
   background: transparent;
 }
 
-/* Portrait upload variant (Founder images) */
-.image-upload-slot--portrait {
-  background: transparent;
-  border: 1px solid rgba(255, 255, 255, 0.25);
-  border-radius: 4px;
-  padding: 8px 16px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  transition: border-color 0.3s ease, background 0.3s ease;
-}
-
-.image-upload-slot--portrait:hover {
-  background: rgba(255, 255, 255, 0.04);
-  border-color: rgba(255, 255, 255, 0.4);
-}
-
-.image-upload-slot--portrait .image-upload-slot__line1 {
-  font-size: 11px;
-  letter-spacing: 0.5px;
-  color: rgba(255, 255, 255, 0.6);
-  text-transform: uppercase;
-  font-weight: 500;
-}
-
-.image-upload-slot--portrait .image-upload-slot__placeholder {
-  gap: 0;
-}
-
-.image-upload-slot--portrait .image-upload-slot__preview {
-  width: 160px;
-  height: 200px;
-  border-radius: 8px;
-  overflow: hidden;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
-}
-
-.image-upload-slot--portrait .image-upload-slot__img {
-  width: 160px;
-  height: 200px;
-  max-width: none;
-  max-height: none;
-  object-fit: cover;
-  border-radius: 8px;
-}
-
-.image-upload-slot--portrait.image-upload-slot--has-image {
-  border: none;
-  padding: 0;
-  background: transparent;
-}
-
 /* ============================================
    TOP SELLING CAROUSEL
    ============================================ */
@@ -1280,7 +1228,7 @@ img {
 }
 
 /* ============================================
-   ABOUT INNOVATION & VISION
+   ABOUT INNOVATION
    ============================================ */
 
 .about-innovation {
@@ -1315,115 +1263,6 @@ img {
 .about-innovation__banner-mount {
   display: flex;
   justify-content: center;
-}
-
-.vision {
-  background: #0e0e0e;
-  width: 100%;
-  min-height: 70vh;
-  padding: 80px 60px;
-  position: relative;
-  text-align: center;
-}
-
-.vision__inner {
-  max-width: 1200px;
-  margin: 0 auto;
-}
-
-.vision__heading-wrap {
-  position: relative;
-  display: inline-block;
-  margin-bottom: 60px;
-}
-
-.vision__heading {
-  font-size: 22px;
-  font-weight: 500;
-  color: #ffffff;
-  margin: 0;
-}
-
-.vision__hand-hint {
-  position: absolute;
-  top: -18px;
-  right: -36px;
-  font-size: 22px;
-  line-height: 1;
-  filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.4));
-  animation: visionHandFloat 2.2s ease-in-out infinite;
-  pointer-events: none;
-}
-
-@keyframes visionHandFloat {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-6px); }
-}
-
-.vision__layout {
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 320px;
-}
-
-.vision__center {
-  max-width: 750px;
-  margin: 0 auto;
-  padding: 0 200px;
-  position: relative;
-  z-index: 1;
-}
-
-.vision__quote {
-  font-size: clamp(26px, 2.2vw, 28px);
-  color: #ffffff;
-  line-height: 1.5;
-  text-align: center;
-  font-style: normal;
-  font-weight: 400;
-  border: none;
-  margin: 0;
-  padding: 0;
-}
-
-.vision__divider {
-  width: 160px;
-  border: none;
-  border-top: 1px solid rgba(255, 255, 255, 0.2);
-  margin: 20px auto;
-}
-
-.vision__founders {
-  font-size: 16px;
-  color: #ffffff;
-  margin: 0;
-}
-
-.vision__founders strong {
-  font-weight: 700;
-}
-
-.vision__founders-role {
-  font-size: 13px;
-  color: rgba(255, 255, 255, 0.5);
-  margin: 6px 0 0;
-}
-
-.vision__founder {
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  z-index: 2;
-}
-
-.vision__founder--left {
-  left: 80px;
-}
-
-.vision__founder--right {
-  right: 80px;
 }
 
 /* ============================================
@@ -2520,22 +2359,6 @@ body.subscribe-modal-open {
     margin-left: 0;
   }
 
-  .vision {
-    padding: 60px 40px;
-  }
-
-  .vision__center {
-    padding: 0 140px;
-  }
-
-  .vision__founder--left {
-    left: 24px;
-  }
-
-  .vision__founder--right {
-    right: 24px;
-  }
-
   .testimonial-card {
     flex: 0 0 340px;
     width: 340px;
@@ -2699,39 +2522,6 @@ body.subscribe-modal-open {
   .about-innovation {
     padding: 50px 30px;
     min-height: auto;
-  }
-
-  .vision {
-    padding: 50px 30px;
-    min-height: auto;
-  }
-
-  .vision__layout {
-    flex-direction: column;
-    gap: 32px;
-    min-height: auto;
-  }
-
-  .vision__founder {
-    position: static;
-    transform: none;
-  }
-
-  .vision__center {
-    order: 2;
-    padding: 0;
-  }
-
-  .vision__founder--left {
-    order: 1;
-  }
-
-  .vision__founder--right {
-    order: 3;
-  }
-
-  .vision__heading-wrap {
-    margin-bottom: 40px;
   }
 
   .testimonials {
@@ -2943,20 +2733,6 @@ body.subscribe-modal-open {
 
   .image-upload-slot--banner .image-upload-slot__img {
     max-width: 100%;
-  }
-
-  .vision {
-    padding: 40px 24px;
-  }
-
-  .vision__quote {
-    font-size: clamp(18px, 5vw, 20px);
-  }
-
-  .vision__founder--left,
-  .vision__founder--right {
-    display: flex;
-    justify-content: center;
   }
 
   .testimonials {
